@@ -4,8 +4,6 @@ project(myspider4)
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
-        csapp.cpp
-        csapp.h
         CSocket.cpp
         CSocket.h
         DNS.cpp
