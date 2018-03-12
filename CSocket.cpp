@@ -11,10 +11,8 @@ int CSocket::open_clientfd(const char *ip, int port)
     struct sockaddr_in serveraddr;
 
     if ((clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-        return -1; /* check errno for cause of error */
-
-    /* Fill in the server's IP address and port */
-
+        return -1;
+    
     bzero(&serveraddr, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
 //        bcopy((char *)hp->h_addr_list[0],
@@ -26,8 +24,6 @@ int CSocket::open_clientfd(const char *ip, int port)
     if (connect(clientfd,(struct sockaddr*) &serveraddr, sizeof(serveraddr)) < 0)
         return -1;
     return clientfd;
-
-
 }
 int CSocket::Open_clientfd(const char *ip, int port)
 {
