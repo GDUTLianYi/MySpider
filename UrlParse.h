@@ -23,7 +23,7 @@ static const std::string hostname = "(?:[a-z0-9](?:[-a-z0-9]*[a-z0-9])?\\.)+(?:c
 static const std::string ip = "(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 static const std::string port = "(?::(\\d{1,5}))?";
 static const std::string path = "(/[^\">'?)]*)?";
-static const std::string pattern_url = protocol + "((?:" + hostname + "|" + ip + "))" + port + path;
+static const std::string pattern_url = protocol + "(" + hostname + "|" + ip + ")" + port + path;
 static const std::string path_href = "(/[^\">'?)]*)+";
 static const std::string pattern_href = "(href=\")"+path_href;
 
