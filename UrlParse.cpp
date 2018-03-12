@@ -7,7 +7,7 @@
 void UrlParse::GetUrl(const char *buf,int len,std::string domain,int port){
 
     std::string str=std::string(buf,buf+len);
-    boost::regex reg_url(pattern_url);
+    boost::regex reg_url(pattern_url,boost::regex_constants::icase);
     boost::sregex_iterator  rit(str.begin(),str.end(),reg_url);
     boost::sregex_iterator  rend;
 
@@ -24,7 +24,7 @@ void UrlParse::GetUrl(const char *buf,int len,std::string domain,int port){
         tmp.state=0;
         AddUrl(tmp);
     }
-    boost::regex reg_href(pattern_href);
+    boost::regex reg_href(pattern_href,boost::regex_constants::icase);
     boost::sregex_iterator  rit_href(str.begin(),str.end(),reg_href);
     for(;rit_href!=rend;rit_href++){
         struct Url tmp;
@@ -49,7 +49,7 @@ int UrlParse::AddUrl(struct Url url){
         return -1;
     }
     url.ip=ip;
-
+    free(ip);
 
     Que_Url.push(url);
     return 1;

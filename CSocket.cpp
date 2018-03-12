@@ -12,7 +12,6 @@ int CSocket::open_clientfd(const char *ip, int port)
 
     if ((clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
         return -1;
-    
     bzero(&serveraddr, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET;
 //        bcopy((char *)hp->h_addr_list[0],
