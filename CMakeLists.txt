@@ -21,8 +21,6 @@ set(SOURCE_FILES
         TaskQueue.h
         TaskQueueSelect.cpp
         TaskQueueSelect.h
-        ThreadPool.cpp
-        ThreadPool.h
         UrlParse.cpp
         UrlParse.h MutexRAII.cpp MutexRAII.h)
 
