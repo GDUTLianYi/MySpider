@@ -27,8 +27,8 @@ std::size_t GetHashcode(std::string s) {
 }
 
 void *SpiderThreadFunc(void *agrc);
-
-int AddUrl(struct Url &url) {
+int xxxx=1;
+int AddUrl(struct Url &url){
     myDNS dnsHeler;
 
     std::size_t hashurl = GetHashcode(url.url);
@@ -57,17 +57,18 @@ int AddUrl(struct Url &url) {
 
 
     size_t domainHash = GetHashcode(url.domain);
-    int flag=0;
-    do{
-        MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-        if(threadNum<40){
-            flag=1;
-        }
-    }while(0);
+
+//    do{
+//        MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//        if(threadNum<40){
+//            flag=1;
+//        }
+//    }while(0);
 
 
-    if (flag||ipMap.find(domainHash) == ipMap.end()) {
-
+    if (1||ipMap.find(domainHash) == ipMap.end()) {
+        std::cout<<"does two"<<std::endl;
+       //xxxx=0;
         //  std::cout<<url.domain<<"  "<<url.ip<<std::endl;
 
         pthread_t tid;
@@ -81,13 +82,12 @@ int AddUrl(struct Url &url) {
             Log::unix_error("error (pthread_create)  ");
             return 3;
         }else{
-            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-            threadNum++;
+
         }
     }
 
     ipMap[domainHash].insert(url);
-    //   std::cout<<"add Url  :domain= "<<url.domain <<"  "<<url.url<<std::endl;
+   // std::cout<<"add Url  :domain= "<<url.domain <<"  "<<url.url<<std::endl;
     return 0;
 }
 
@@ -147,19 +147,20 @@ void *SpiderThreadFunc(void *agrc) {
     size_t ac = *((std::size_t *) agrc);
     free(agrc);
     size_t hashdomain = ac;
-    //std::cout << "in thread  " << hashdomain << std::endl;
-
+    std::cout << "in thread  " << hashdomain << std::endl;
     std::string ip;
     int port;
     do {
+
+
         //std::cout<<"apply mutex_ipMap"<<std::endl;
         MutexRAII<pthread_mutex_t> lock(mutex_ipMap);
         //std::cout<<"apply mutex_ipMap OK "<<std::endl;
         if (ipMap.find(hashdomain) == ipMap.end()) {
 
             std::cout << "what " << std::endl;
-            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-            threadNum--;
+//            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//            threadNum--;
             pthread_exit(NULL);
         }
 
@@ -174,6 +175,7 @@ void *SpiderThreadFunc(void *agrc) {
     int clientfd = socketFactory.open_clientfd(ip.c_str(), port);
     // std::cout<<"create socket ok  "<<clientfd <<std::endl;
 
+
     if (clientfd == -1) {
         MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
         threadNum--;
@@ -181,21 +183,21 @@ void *SpiderThreadFunc(void *agrc) {
     }
 
     Url tmpurl;
-    int flag;
-    for (; FinshSign != 1;) {
+    int flag1;
+   // for (; FinshSign != 1;) {
 
-        //std::cout << "[ hashdomain ]" << hashdomain << std::endl;
+        std::cout << "[ hashdomain ]" << hashdomain << std::endl;
         loop:;
         do {
-            if (flag == 0) {
+            if (flag1 == 0) {
 
                 if (timeout++ >3){
                     // close(clientfd);
                     // std::cout<<"CLOSE clientfd  "<< clientfd<<std::endl;
-                    close(clientfd);
-                    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-                    threadNum--;
-                    pthread_exit(NULL);
+                  //  close(clientfd);
+                   // MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+                    //threadNum--;
+                  //  pthread_exit(NULL);
                 }
                 sleep(5);
             }
@@ -205,7 +207,7 @@ void *SpiderThreadFunc(void *agrc) {
             if (ipMap[hashdomain].empty()) {
                 ipMap.erase(hashdomain);
 
-                flag = 0;
+                flag1 = 0;
                 goto loop;
             }
             tmpurl = *ipMap[hashdomain].begin();
@@ -215,14 +217,15 @@ void *SpiderThreadFunc(void *agrc) {
         } while (0);
 
 
-        flag = 1;
+
         httpHelper.Form_Get(sdbuf, tmpurl);
-        //  std::cout<<"want to send :"<<sdbuf<<std::endl;
+          std::cout<<"want to send :"<<sdbuf<<std::endl;
         if (send(clientfd, sdbuf, strlen(sdbuf), 0) == -1) {
             Log::unix_error("send get error");
-            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-            threadNum--;
-            pthread_exit(NULL);
+//            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//            threadNum--;
+      pthread_exit(NULL);
+           // continue;
         } else {
             //std::cout<<sdbuf<<std::endl;
         }
@@ -250,7 +253,7 @@ void *SpiderThreadFunc(void *agrc) {
         }
 
         if (state != 200) {
-            continue;
+            pthread_exit(NULL);
         }
         std::string DirPath, FilePath;
         FileHelper fileHelper;
@@ -259,7 +262,7 @@ void *SpiderThreadFunc(void *agrc) {
         int Fd_SaveFile = open(FilePath.c_str(), O_RDWR | O_CREAT | O_TRUNC, MODE);
         if (Fd_SaveFile == -1) {
             Log::unix_error("create open file error");
-            continue;
+            pthread_exit(NULL);
         }
 
         //std::cout << FilePath << std::endl;
@@ -267,8 +270,8 @@ void *SpiderThreadFunc(void *agrc) {
             // std::cout<<i++<<std::endl;
             if (rn < 0) {
                 close(clientfd);
-                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-                threadNum--;
+//                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//                threadNum--;
                 pthread_exit(NULL);
             }
             std::cout << " " << rn << std::endl;
@@ -285,10 +288,10 @@ void *SpiderThreadFunc(void *agrc) {
             Que_RegexFile.push(RegexPackage{FilePath, tmpurl.domain, tmpurl.port});
         } while (0);
 
-    }
+   // }
 
-    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-    threadNum--;
+//    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//    threadNum--;
     return NULL;
 }
 
@@ -350,7 +353,7 @@ void *RegexThreadFunc(void *argc) {
         }
         close(fd);
 
-
+        std::cout << "close fd " << fd << std::endl;
 
     }
     return nullptr;
@@ -403,41 +406,41 @@ void UrlParse::Init(std::string url) {
     int timeout=0;
     for(;timeout<100;) {
         sleep(10);
-        do {
-            MutexRAII<pthread_mutex_t> lock(mutex_ipMap);
-
-
-            for (auto &i:ipMap) {
-
-                do{
-                    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-                    if(threadNum<30)
-                    {
-                        threadNum++;
-                    }else {
-                        goto loop1;
-                    }
-                }while(0);
-
-
-                if (i.second.empty()) {
-                    continue;
-                }
-
-                pthread_t tid;
-                int terror;
-                // std::cout<<"create thread "<<tid <<" domainhash="<<domainHash <<std::endl;
-                terror = pthread_create(&tid, NULL, SpiderThreadFunc, new size_t(i.first));
-
-                if (terror != 0) {
-                    Log::unix_error("create thread in fix");
-                }else{
-                    std::cout<<"create thread "<<tid <<" domainhash="<<i.first <<std::endl;
-                }
-
-                 loop1:;
-            }
-        } while (0);
+//        do {
+//            MutexRAII<pthread_mutex_t> lock(mutex_ipMap);
+//
+//
+//            for (auto &i:ipMap) {
+//
+//                do{
+//                    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//                    if(threadNum<30)
+//                    {
+//                        threadNum++;
+//                    }else {
+//                        goto loop1;
+//                    }
+//                }while(0);
+//
+//
+//                if (i.second.empty()) {
+//                    continue;
+//                }
+//
+//                pthread_t tid;
+//                int terror;
+//                // std::cout<<"create thread "<<tid <<" domainhash="<<domainHash <<std::endl;
+//                terror = pthread_create(&tid, NULL, SpiderThreadFunc, new size_t(i.first));
+//
+//                if (terror != 0) {
+//                    Log::unix_error("create thread in fix");
+//                }else{
+//                    std::cout<<"create thread "<<tid <<" domainhash="<<i.first <<std::endl;
+//                }
+//
+//                 loop1:;
+//            }
+//        } while (0);
     }
     return;
 }
