@@ -15,8 +15,8 @@
 #include<fcntl.h>
 class FileHelper {
 public:
-    static int CreateDir(const char *sPathName);
-    static int getDirAndFileName(struct Url &t,std::string &dirPath,std::string &filePath);
+     int CreateDir(const char *sPathName);
+     int getDirAndFileName(struct Url &t,std::string &dirPath,std::string &filePath);
 
 };
 

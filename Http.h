@@ -11,7 +11,7 @@
 
 class Http {
 public:
-    static void Form_Get(char *sdbuf,const struct Url& u);
+     void Form_Get(char *sdbuf,const struct Url& u);
 };
 
 

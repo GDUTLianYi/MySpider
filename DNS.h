@@ -15,13 +15,12 @@
 #include <zconf.h>
 
 
-class DNS {
+class myDNS {
 
-    static std::map<std::string,std::string>Map_HostToIp;
 
 public:
-    static char *GetHostByName(std::string hostname);
-
+    myDNS(){};
+     char *GetHostByName(std::string hostname);
 };
 
 

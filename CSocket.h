@@ -11,8 +11,8 @@
 #include"Log.h"
 class CSocket {
   public:
-    static int open_clientfd(const char *ip, int port);
-    static int Open_clientfd(const char *ip, int port=80);
+     int open_clientfd(const char *ip, int port);
+     int Open_clientfd(const char *ip, int port=80);
 };
 
 

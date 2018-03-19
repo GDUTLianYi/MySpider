@@ -1,11 +1,14 @@
 //
 // Created by lianyi on 18-2-24.
 //
-
+#include "MutexRAII.h"
 #include "DNS.h"
-std::map<std::string,std::string>DNS::Map_HostToIp;
+pthread_mutex_t mutex_Map_HostToIp=PTHREAD_MUTEX_INITIALIZER;
 
- char *DNS::GetHostByName(std::string hostname){
+std::map<std::string,std::string>Map_HostToIp;
+ char *myDNS::GetHostByName(std::string hostname){
+
+    MutexRAII<pthread_mutex_t>lockf(mutex_Map_HostToIp);
 
     if(Map_HostToIp.count(hostname)){
         //  return strdup(Map_HostToIp[hostname].c_str());

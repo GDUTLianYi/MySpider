@@ -24,7 +24,7 @@ set(SOURCE_FILES
         ThreadPool.cpp
         ThreadPool.h
         UrlParse.cpp
-        UrlParse.h)
+        UrlParse.h MutexRAII.cpp MutexRAII.h)
 
 add_executable(myspider4 ${SOURCE_FILES})
 target_link_libraries(myspider4 /usr/lib/x86_64-linux-gnu/libevent.so)

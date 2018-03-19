@@ -5,20 +5,24 @@
 #ifndef MYSPIDER_URLPARSE_H
 #define MYSPIDER_URLPARSE_H
 
+
+#include<bits/stdc++.h>
 #include"DNS.h"
 #include<string>
 #include<queue>
 #include<map>
 #include<set>
-
+#include"CSocket.h"
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include<boost/regex.hpp>
-#include<bits/stdc++.h>
+#include"MutexRAII.h"
+#include"Http.h"
+#include"Rio.h"
+
 
 static const std::string protocol = "(?:(mailto|ssh|ftp|https?)://)?";
 //static const std::string hostname = "(?:[a-z0-9](?:[-a-z0-9]*[a-z0-9])?\\.)+(?:com|net|edu|biz|gov|org|in(?:t|fo)|(?-i:[a-z][a-z]))";
-
 static const std::string hostname = "(?:[a-z0-9](?:[-a-z0-9]*[a-z0-9])?\\.)+(?:com|net|edu|biz|gov|org|in(?:t|fo))";
 static const std::string ip = "(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.(?:[01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 static const std::string port = "(?::(\\d{1,5}))?";
@@ -36,17 +40,33 @@ struct Url{
     int dep;
     int state;
 };
+class UrlKey{
+public:
+    std::size_t operator()(const Url &rc) const
+    {
+        return std::hash<std::string>{}(rc.url);
+    }
+};
+class UrlCmp{
+public:
+    bool operator()(const Url &rc1,const Url &rc2)const{
+        return rc1.url==rc2.url;
+    }
+};
+
+struct RegexPackage{
+    std::string file;
+    std::string domain;
+    int port;
+};
+
+
 
 class UrlParse {
 
     public:
-    void GetUrl(const char *buf,int len,std::string domain="",int port=80);
-    std::queue<Url> Que_Url;
-    std::set<std::string> Set_Url;
-    int AddUrl(struct Url url);
-    struct Url pop();
-    bool Empty();
-    std::tuple<std::string,std::string,std::string> ToParseUrl(std::string url);
+    void Init(std::string url);
+
 };
 
 
