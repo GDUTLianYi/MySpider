@@ -12,7 +12,8 @@ int main() {
     m_UrlParse.Init("http://en.cppreference.com/w/");
 
 
-    while(1){
+   // while(1)
+    {
 
         sleep(200);
        // cout<<"Main"<<endl;
