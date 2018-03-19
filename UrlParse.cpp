@@ -33,9 +33,9 @@ int AddUrl(struct Url &url){
 
     std::size_t hashurl = GetHashcode(url.url);
     do {
-        //std::cout<<"apply mutex_Set_Url"<<std::endl;
+        std::cout<<"apply mutex_Set_Url"<<std::endl;
         MutexRAII<pthread_mutex_t> lcks(mutex_Set_Url);
-        //std::cout<<"apply mutex_Set_Url OK "<<std::endl;
+        std::cout<<"apply mutex_Set_Url OK "<<std::endl;
         if (Set_Url.count(hashurl)) {
             return 1;
         } else {
@@ -51,9 +51,9 @@ int AddUrl(struct Url &url){
 
     url.ip = ip;
     free(ip);
-    //std::cout<<"apply mutex_ipMap"<<std::endl;
+    std::cout<<"apply mutex_ipMap"<<std::endl;
     MutexRAII<pthread_mutex_t> lck(mutex_ipMap);
-    // std::cout<<"apply mutex_ipMap OK "<<std::endl;
+     std::cout<<"apply mutex_ipMap OK "<<std::endl;
 
 
     size_t domainHash = GetHashcode(url.domain);
@@ -68,9 +68,10 @@ int AddUrl(struct Url &url){
 
     if (1||ipMap.find(domainHash) == ipMap.end()) {
         std::cout<<"does two"<<std::endl;
-       //xxxx=0;
-        //  std::cout<<url.domain<<"  "<<url.ip<<std::endl;
 
+        //  std::cout<<url.domain<<"  "<<url.ip<<std::endl;
+        threadNum++;
+        std::cout<<"threadNum "<<threadNum<<std::endl;
         pthread_t tid;
         int terror;
         //  std::cout<<"create thread "<<tid <<" domainhash="<<domainHash <<std::endl;
@@ -153,14 +154,15 @@ void *SpiderThreadFunc(void *agrc) {
     do {
 
 
-        //std::cout<<"apply mutex_ipMap"<<std::endl;
+        std::cout<<"apply mutex_ipMap"<<std::endl;
         MutexRAII<pthread_mutex_t> lock(mutex_ipMap);
-        //std::cout<<"apply mutex_ipMap OK "<<std::endl;
+        std::cout<<"apply mutex_ipMap OK "<<std::endl;
         if (ipMap.find(hashdomain) == ipMap.end()) {
 
             std::cout << "what " << std::endl;
 //            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-//            threadNum--;
+
+            std::cout<<"threadNum "<<threadNum--<<std::endl;
             pthread_exit(NULL);
         }
 
@@ -173,12 +175,12 @@ void *SpiderThreadFunc(void *agrc) {
     Http httpHelper;
     // std::cout<<"create socket"<<std::endl;
     int clientfd = socketFactory.open_clientfd(ip.c_str(), port);
-    // std::cout<<"create socket ok  "<<clientfd <<std::endl;
+    //std::cout<<"create socket ok  "<<clientfd <<std::endl;
 
 
     if (clientfd == -1) {
         MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-        threadNum--;
+        std::cout<<"threadNum "<<threadNum--<<std::endl;
         pthread_exit(NULL);
     }
 
@@ -187,7 +189,7 @@ void *SpiderThreadFunc(void *agrc) {
    // for (; FinshSign != 1;) {
 
         std::cout << "[ hashdomain ]" << hashdomain << std::endl;
-        loop:;
+        //loop:;
         do {
             if (flag1 == 0) {
 
@@ -208,7 +210,10 @@ void *SpiderThreadFunc(void *agrc) {
                 ipMap.erase(hashdomain);
 
                 flag1 = 0;
-                goto loop;
+              //  goto loop;
+                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+                std::cout<<"threadNum "<<threadNum--<<std::endl;
+                pthread_exit(NULL);
             }
             tmpurl = *ipMap[hashdomain].begin();
             ipMap[hashdomain].erase(ipMap[hashdomain].begin());
@@ -224,6 +229,8 @@ void *SpiderThreadFunc(void *agrc) {
             Log::unix_error("send get error");
 //            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
 //            threadNum--;
+            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+            std::cout<<"threadNum "<<threadNum--<<std::endl;
       pthread_exit(NULL);
            // continue;
         } else {
@@ -242,6 +249,8 @@ void *SpiderThreadFunc(void *agrc) {
             // std::cout << sdbuf;
             if (rn < 0) {
                 close(clientfd);
+                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+                std::cout<<"threadNum "<<threadNum--<<std::endl;
                 pthread_exit(NULL);
             }
             if (state == -1) {
@@ -253,6 +262,8 @@ void *SpiderThreadFunc(void *agrc) {
         }
 
         if (state != 200) {
+            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+            std::cout<<"threadNum "<<threadNum--<<std::endl;
             pthread_exit(NULL);
         }
         std::string DirPath, FilePath;
@@ -262,7 +273,9 @@ void *SpiderThreadFunc(void *agrc) {
         int Fd_SaveFile = open(FilePath.c_str(), O_RDWR | O_CREAT | O_TRUNC, MODE);
         if (Fd_SaveFile == -1) {
             Log::unix_error("create open file error");
-            pthread_exit(NULL);
+            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+            std::cout<<"threadNum "<<threadNum--<<std::endl;
+           pthread_exit(NULL);
         }
 
         //std::cout << FilePath << std::endl;
@@ -270,6 +283,8 @@ void *SpiderThreadFunc(void *agrc) {
             // std::cout<<i++<<std::endl;
             if (rn < 0) {
                 close(clientfd);
+                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+                std::cout<<"threadNum "<<threadNum--<<std::endl;
 //                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
 //                threadNum--;
                 pthread_exit(NULL);
@@ -279,11 +294,13 @@ void *SpiderThreadFunc(void *agrc) {
         }
 
         close(Fd_SaveFile);
+
+
         do {
 
-            //std::cout<<"apply mutex_Que_RegexFile"<<std::endl;
+            std::cout<<"apply mutex_Que_RegexFile"<<std::endl;
             MutexRAII<pthread_mutex_t> lockf(mutex_Que_RegexFile);
-            //std::cout<<"apply mutex_Que_RegexFile OK "<<std::endl;
+            std::cout<<"apply mutex_Que_RegexFile OK "<<std::endl;
             // std::cout<<"add FIlE :: "<<FilePath<<std::endl;
             Que_RegexFile.push(RegexPackage{FilePath, tmpurl.domain, tmpurl.port});
         } while (0);
@@ -292,6 +309,8 @@ void *SpiderThreadFunc(void *agrc) {
 
 //    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
 //    threadNum--;
+    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+    std::cout<<"threadNum "<<threadNum--<<std::endl;
     return NULL;
 }
 
@@ -300,15 +319,26 @@ void *RegexThreadFunc(void *argc) {
 
 
 
-
     Rio m_rio;
     rio_t rio;
     char sdbuf[8192];
     RegexPackage rp;
     int flag;
+
     for (; FinshSign != 1;) {
+    int xxxx=1;
+        do {
+            sleep(1);
+            MutexRAII<pthread_mutex_t> loxx(mutex_threadNum);
+            if (threadNum > 1000) {
+                xxxx = 0;
+            }
+        }while(0);
 
-
+        if(xxxx==0){
+            sleep(20);
+            continue;
+        }
         do {
             //std::cout<<"here"<<std::endl;
             if (flag == 0) {
@@ -355,6 +385,7 @@ void *RegexThreadFunc(void *argc) {
 
         std::cout << "close fd " << fd << std::endl;
 
+        sleep(1);
     }
     return nullptr;
 }
