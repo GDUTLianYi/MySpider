@@ -213,6 +213,7 @@ void *SpiderThreadFunc(void *agrc) {
               //  goto loop;
                 MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
                 std::cout<<"threadNum "<<threadNum--<<std::endl;
+                close(clientfd);
                 pthread_exit(NULL);
             }
             tmpurl = *ipMap[hashdomain].begin();
@@ -231,6 +232,7 @@ void *SpiderThreadFunc(void *agrc) {
 //            threadNum--;
             MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
             std::cout<<"threadNum "<<threadNum--<<std::endl;
+            close(clientfd);
       pthread_exit(NULL);
            // continue;
         } else {
@@ -251,6 +253,7 @@ void *SpiderThreadFunc(void *agrc) {
                 close(clientfd);
                 MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
                 std::cout<<"threadNum "<<threadNum--<<std::endl;
+                close(clientfd);
                 pthread_exit(NULL);
             }
             if (state == -1) {
@@ -264,6 +267,7 @@ void *SpiderThreadFunc(void *agrc) {
         if (state != 200) {
             MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
             std::cout<<"threadNum "<<threadNum--<<std::endl;
+            close(clientfd);
             pthread_exit(NULL);
         }
         std::string DirPath, FilePath;
@@ -275,6 +279,7 @@ void *SpiderThreadFunc(void *agrc) {
             Log::unix_error("create open file error");
             MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
             std::cout<<"threadNum "<<threadNum--<<std::endl;
+            close(clientfd);
            pthread_exit(NULL);
         }
 
@@ -287,6 +292,7 @@ void *SpiderThreadFunc(void *agrc) {
                 std::cout<<"threadNum "<<threadNum--<<std::endl;
 //                MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
 //                threadNum--;
+                close(clientfd);
                 pthread_exit(NULL);
             }
             std::cout << " " << rn << std::endl;
@@ -309,6 +315,8 @@ void *SpiderThreadFunc(void *agrc) {
 
 //    MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
 //    threadNum--;
+//
+    close(clientfd);
     MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
     std::cout<<"threadNum "<<threadNum--<<std::endl;
     return NULL;
