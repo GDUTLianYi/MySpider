@@ -70,21 +70,27 @@ void * ThreadSocketFunc(void *argc){
         if(1) {
 
            // std::cout<<"apply mutex_Que_UrlBeforeConnect"<<std::endl;
-            MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeConnect);
+
            // std::cout<<"apply mutex_Que_UrlBeforeConnect OK "<<std::endl;
 
             for(int i=0;i<20;i++){
                 std::cout<<"con activi"<<Que_UrlBeforeConnect.size()<<std::endl;
                 if(lisfd[i]==-1){
+
+
                     std::cout<<"con activi do and Que_UrlBeforeConnect size="<<Que_UrlBeforeConnect.size()<<std::endl;
+
+                    MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeConnect);
                     if (Que_UrlBeforeConnect.empty()) {
                         emp=1;
-                        continue;
+                        break;
                     } else {
-                        tmpurl[i]=Que_UrlBeforeConnect.front();
+                        tmpurl[i] = Que_UrlBeforeConnect.front();
                         Que_UrlBeforeConnect.pop();
+                    }
 
-                        int clientfd;
+
+                      int clientfd;
                         if ((clientfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
                             Log::unix_error("create socket error");
                             continue;
@@ -140,7 +146,7 @@ void * ThreadSocketFunc(void *argc){
                             }
 
                         }
-                    }
+
 
                 }
             }
