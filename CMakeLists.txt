@@ -22,7 +22,7 @@ set(SOURCE_FILES
         TaskQueueSelect.cpp
         TaskQueueSelect.h
         UrlParse.cpp
-        UrlParse.h MutexRAII.cpp MutexRAII.h)
+        UrlParse.h MutexRAII.cpp MutexRAII.h ThreadPool.cpp ThreadPool.h)
 
 add_executable(myspider4 ${SOURCE_FILES})
 target_link_libraries(myspider4 /usr/lib/x86_64-linux-gnu/libevent.so)

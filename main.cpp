@@ -5,7 +5,7 @@
 using namespace std;
 
 
-int FinshSign;
+int FinshSign=0;
 int main() {
     clock_t start = clock();
     UrlParse m_UrlParse;

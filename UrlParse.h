@@ -19,7 +19,7 @@
 #include"MutexRAII.h"
 #include"Http.h"
 #include"Rio.h"
-
+#include"ThreadPool.h"
 
 static const std::string protocol = "(?:(mailto|ssh|ftp|https?)://)?";
 //static const std::string hostname = "(?:[a-z0-9](?:[-a-z0-9]*[a-z0-9])?\\.)+(?:com|net|edu|biz|gov|org|in(?:t|fo)|(?-i:[a-z][a-z]))";
@@ -39,6 +39,7 @@ struct Url{
     int port;
     int dep;
     int state;
+    int fd;
 };
 class UrlKey{
 public:
