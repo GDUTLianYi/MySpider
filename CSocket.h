@@ -8,7 +8,7 @@
 
 #include <netinet/in.h>
 #include<string.h>
-#include"Log.h"
+#include"UrlParse.h"
 class CSocket {
   public:
      int open_clientfd(const char *ip, int port);

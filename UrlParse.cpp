@@ -7,30 +7,36 @@
 
 #define MODE S_IRUSR|S_IWUSR|S_IXUSR
 
-int threadNum = 0;
+
 extern int FinshSign;
+extern pthread_mutex_t mutex_Que_UrlBeforeDns ;
+extern std::queue<Url> Que_UrlBeforeDns;
+extern void  * ThreadSocketFunc(void *argc);
+extern void  * ThreadDnsFunc(void *argc);
+extern pthread_mutex_t mutex_Que_UrlBeforeConnect;
+extern std::queue<Url> Que_UrlBeforeConnect;
 pthread_mutex_t mutex_ipMap = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_Que_RegexFile = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_Set_Url = PTHREAD_MUTEX_INITIALIZER;
 pthread_mutex_t mutex_threadNum = PTHREAD_MUTEX_INITIALIZER;
-typedef std::unordered_set<struct Url, UrlKey, UrlCmp> urlSet;
-std::unordered_map<std::size_t, urlSet> ipMap;
-std::queue<RegexPackage> Que_RegexFile;
-std::queue<Url> BeforeUrl;
+
+
 std::unordered_set<std::size_t> Set_Url;
-
 std::tuple<std::string, std::string, std::string> ToParseUrl(std::string url);
-
+int threadNum = 0;
 
 std::size_t GetHashcode(std::string s) {
     return std::hash<std::string>{}(s);
 }
 
+typedef std::unordered_set<struct Url, UrlKey, UrlCmp> urlSet;
+std::unordered_map<std::size_t, urlSet> ipMap;
+std::queue<RegexPackage> Que_RegexFile;
 
 int xxxx = 1;
 
 int AddUrl(struct Url &url) {
-    myDNS dnsHeler;
+
 
     std::size_t hashurl = GetHashcode(url.url);
     do {
@@ -44,23 +50,15 @@ int AddUrl(struct Url &url) {
         }
     } while (0);
 
+    do {
+        //  std::cout<<"apply mutex_Set_Url"<<std::endl;
+        MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeDns);
+        //std::cout<<"apply mutex_Set_Url OK "<<std::endl;
+        Que_UrlBeforeDns.push(url);
+        std::cout<<"Que_UrlBeforeDns size="<<Que_UrlBeforeDns.size()<<std::endl;
 
-    char *ip = dnsHeler.GetHostByName(url.domain);
-    if (ip == NULL) {
-        return 2;
-    }
+    } while (0);
 
-    url.ip = ip;
-    free(ip);
-    // std::cout<<"apply mutex_ipMap"<<std::endl;
-    MutexRAII<pthread_mutex_t> lck(mutex_ipMap);
-    //  std::cout<<"apply mutex_ipMap OK "<<std::endl;
-
-
-    size_t domainHash = GetHashcode(url.domain);
-
-    ipMap[domainHash].insert(url);
-    // std::cout<<"add Url  :domain= "<<url.domain <<"  "<<url.url<<std::endl;
     return 0;
 }
 
@@ -121,47 +119,28 @@ void *RegexThreadFunc(void *argc) {
     char sdbuf[8192];
     RegexPackage rp;
     int flag;
-
+    int emp=0;
     for (; FinshSign != 1;) {
-        int xxxx = 1;
-        do {
-            sleep(1);
-            MutexRAII<pthread_mutex_t> loxx(mutex_threadNum);
-            if (threadNum > 1000) {
-                xxxx = 0;
-            }
-        } while (0);
-
-        if (xxxx == 0) {
-            sleep(20);
-            continue;
+        if (emp == 1) {
+            sleep(15);
+            emp=0;
         }
-        do {
-            //std::cout<<"here"<<std::endl;
-            if (flag == 0) {
-                sleep(5);
-            }
+
+        if(1) {
             MutexRAII<pthread_mutex_t> lockf(mutex_Que_RegexFile);
             if (Que_RegexFile.empty()) {
-
                 //std::cout<<"sleep"<<std::endl;
-                flag = 0;
-                break;
+                emp = 1;
+                continue;
             }
-            flag = 1;
             rp = Que_RegexFile.front();
             Que_RegexFile.pop();
             // std::cout<<"take out from queRgex"<<std::endl;
-        } while (0);
-
-        if (flag == 0) {
-            continue;
         }
-        flag = 1;
+
         int fd = open(rp.file.c_str(), O_RDWR, MODE);
         std::cout << "open file" << rp.file << std::endl;
         if (fd == -1) {
-
             Log::unix_error("create open file error");
             continue;
         }
@@ -180,7 +159,25 @@ void *RegexThreadFunc(void *argc) {
         }
         close(fd);
         std::cout << "close fd " << fd << std::endl;
-        sleep(1);
+
+
+        if (1) {
+            MutexRAII<pthread_mutex_t> lockf(mutex_Que_UrlBeforeDns);
+            if(Que_UrlBeforeDns.size()>500) {
+                std::cout << "Que_UrlBeforeDns size=" << Que_UrlBeforeDns.size() << std::endl;
+                emp = 1;
+            }
+        }
+
+        if (1) {
+            MutexRAII<pthread_mutex_t> lockf(mutex_Que_UrlBeforeConnect);
+            std::cout << "Que_UrlBeforeConnect size=" << Que_UrlBeforeConnect.size()<< std::endl;
+        }
+
+        if (1) {
+            MutexRAII<pthread_mutex_t> lockf(mutex_ipMap);
+            std::cout << "ipMap size=" << ipMap.size() << std::endl;
+        }
     }
     return nullptr;
 }
@@ -229,8 +226,25 @@ void UrlParse::Init(std::string url) {
         Log::unix_error("init erroe");
     }
 
-    ThreadPool threadPool(20);
-    threadPool.Init(20);
+    ThreadPool threadPool(100);
+    threadPool.Init(100);
+
+    pthread_t sockettid;
+    terror= pthread_create(&sockettid,NULL,ThreadSocketFunc,NULL);
+    if(terror!=0){
+        Log::unix_error("create ThreadSocketFunc error");
+    }else{
+        std::cout<<"create ThreadSocketFunc success "<<tid<<std::endl;
+    }
+
+    pthread_t dnstid;
+    terror= pthread_create(&dnstid,NULL,ThreadDnsFunc,NULL);
+    if(terror!=0){
+        Log::unix_error("create ThreadDnsFunc error");
+    }else{
+        std::cout<<"create ThreadDnsFunc success "<<tid<<std::endl;
+    }
+
     int timeout = 0;
     for (; timeout < 100;) {
         sleep(10);

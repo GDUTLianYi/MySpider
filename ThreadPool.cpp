@@ -65,20 +65,21 @@ void *SpiderThreadFunc(void *agrc) {
         }
 
 
-        port = tmpurl.port;
-        ip = tmpurl.ip;
-        // std::cout<<"create socket"<<std::endl;
-        int clientfd = socketFactory.open_clientfd(ip.c_str(), port);
-        //std::cout<<"create socket ok  "<<clientfd <<std::endl;
+//        port = tmpurl.port;
+//        ip = tmpurl.ip;
+//        // std::cout<<"create socket"<<std::endl;
+//        int clientfd = socketFactory.open_clientfd(ip.c_str(), port);
+//        //std::cout<<"create socket ok  "<<clientfd <<std::endl;
+//
+//        if (clientfd == -1) {
+//            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
+//            std::cout << "threadNum " << threadNum-- << std::endl;
+//
+//
+//            continue;
+//        }
 
-        if (clientfd == -1) {
-            MutexRAII<pthread_mutex_t> lckn(mutex_threadNum);
-            std::cout << "threadNum " << threadNum-- << std::endl;
-
-
-            continue;
-        }
-
+        int clientfd=tmpurl.fd;
 
         httpHelper.Form_Get(sdbuf, tmpurl);
         std::cout << "want to send :" << sdbuf << std::endl;
@@ -145,7 +146,7 @@ void *SpiderThreadFunc(void *agrc) {
                 gt = 1;
                 break;
             }
-            std::cout << " " << rn << std::endl;
+           // std::cout << " " << rn << std::endl;
             write(Fd_SaveFile, sdbuf, rn);
         }
 

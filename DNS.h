@@ -13,7 +13,7 @@
 #include <map>
 #include <queue>
 #include <zconf.h>
-
+#include"UrlParse.h"
 
 class myDNS {
 
@@ -21,6 +21,7 @@ class myDNS {
 public:
     myDNS(){};
      char *GetHostByName(std::string hostname);
+
 };
 
 
