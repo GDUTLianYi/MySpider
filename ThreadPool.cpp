@@ -31,12 +31,13 @@ void *SpiderThreadFunc(void *agrc) {
     Rio m_rio;
     Url tmpurl;
     int gt, emp = 0;
-
+    int tr=0;
     for (; FinshSign != 1;) {
         gt = 0;
-        if (emp == 1) {
-            sleep(5);
-
+        if (emp > 0) {
+            sleep(5+tr*emp*5);
+            emp=0;
+            std::cout<<"Thread sleep ()"<<std::endl;
         } else {
 
         }
@@ -45,7 +46,8 @@ void *SpiderThreadFunc(void *agrc) {
 
             MutexRAII<pthread_mutex_t> lock(mutex_ipMap);
             if (ipMap.empty()) {
-                emp = 1;
+
+                emp = 5;
                 continue;
                 // pthread_exit(NULL);
             }
@@ -56,7 +58,7 @@ void *SpiderThreadFunc(void *agrc) {
                 continue;
 
             }
-
+            tr=1;
             tmpurl = *(((ipMap.begin())->second).begin());
             (ipMap.begin())->second.erase(((ipMap.begin())->second).begin());
             if (((ipMap.begin())->second).empty()) {
@@ -159,7 +161,7 @@ void *SpiderThreadFunc(void *agrc) {
             //std::cout << "apply mutex_Que_RegexFile" << std::endl;
             MutexRAII<pthread_mutex_t> lockf(mutex_Que_RegexFile);
             //std::cout << "apply mutex_Que_RegexFile OK " << std::endl;
-            // std::cout<<"add FIlE :: "<<FilePath<<std::endl;
+            std::cout<<"add FIlE :: "<<FilePath<<std::endl;
             Que_RegexFile.push(RegexPackage{FilePath, tmpurl.domain, tmpurl.port});
         } while (0);
     }

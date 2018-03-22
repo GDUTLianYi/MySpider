@@ -55,7 +55,7 @@ int AddUrl(struct Url &url) {
         MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeDns);
         //std::cout<<"apply mutex_Set_Url OK "<<std::endl;
         Que_UrlBeforeDns.push(url);
-        std::cout<<"Que_UrlBeforeDns size="<<Que_UrlBeforeDns.size()<<std::endl;
+       // std::cout<<"Que_UrlBeforeDns size="<<Que_UrlBeforeDns.size()<<std::endl;
 
     } while (0);
 
@@ -121,8 +121,8 @@ void *RegexThreadFunc(void *argc) {
     int flag;
     int emp=0;
     for (; FinshSign != 1;) {
-        if (emp == 1) {
-            sleep(15);
+        if (emp >0) {
+            sleep(10+5*emp);
             emp=0;
         }
 
@@ -163,9 +163,9 @@ void *RegexThreadFunc(void *argc) {
 
         if (1) {
             MutexRAII<pthread_mutex_t> lockf(mutex_Que_UrlBeforeDns);
-            if(Que_UrlBeforeDns.size()>500) {
+            if(Que_UrlBeforeDns.size()>100) {
                 std::cout << "Que_UrlBeforeDns size=" << Que_UrlBeforeDns.size() << std::endl;
-                emp = 1;
+                emp = Que_UrlBeforeDns.size()/20;
             }
         }
 
@@ -226,8 +226,8 @@ void UrlParse::Init(std::string url) {
         Log::unix_error("init erroe");
     }
 
-    ThreadPool threadPool(100);
-    threadPool.Init(100);
+    ThreadPool threadPool(2);
+    threadPool.Init(2);
 
     pthread_t sockettid;
     terror= pthread_create(&sockettid,NULL,ThreadSocketFunc,NULL);

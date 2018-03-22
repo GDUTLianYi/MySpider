@@ -69,9 +69,9 @@ void * ThreadDnsFunc(void *argc){
 
             }
         }
-        std::cout<<"begin dns"<<std::endl;
+      //  std::cout<<"begin dns"<<std::endl;
         char *ip=dnshelper.GetHostByName(tmpurl.domain);
-        std::cout<<"end dns"<<std::endl;
+      //  std::cout<<"end dns"<<std::endl;
 
         if (ip == NULL) {
             continue;
@@ -84,8 +84,8 @@ void * ThreadDnsFunc(void *argc){
             MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeConnect);
            // std::cout<<"apply mutex_Que_UrlBeforeConnect OK "<<std::endl;
             Que_UrlBeforeConnect.push(tmpurl);
-            std::cout<<"Que_UrlBeforeConnect size= "<<Que_UrlBeforeConnect.size()<<std::endl;
-            if(Que_UrlBeforeConnect.size()>500){
+          //  std::cout<<"Que_UrlBeforeConnect size= "<<Que_UrlBeforeConnect.size()<<std::endl;
+            if(Que_UrlBeforeConnect.size()>300){
                 emp=1;
             }
         }

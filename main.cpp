@@ -7,6 +7,8 @@ using namespace std;
 
 int FinshSign=0;
 int main() {
+
+
     clock_t start = clock();
     UrlParse m_UrlParse;
     m_UrlParse.Init("http://en.cppreference.com/w/");

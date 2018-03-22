@@ -4,6 +4,7 @@
 
 #include "CSocket.h"
 #include<arpa/inet.h>
+#include <zconf.h>
 
 pthread_mutex_t mutex_Que_UrlBeforeConnect = PTHREAD_MUTEX_INITIALIZER;
 std::queue<Url> Que_UrlBeforeConnect;
@@ -47,6 +48,8 @@ int CSocket::Open_clientfd(const char *ip, int port) {
 
 
 void *ThreadSocketFunc(void *argc) {
+
+
     int emp = 0;
     CSocket socketFactory;
 
@@ -69,19 +72,19 @@ void *ThreadSocketFunc(void *argc) {
         if (1) {
 
             // std::cout<<"apply mutex_Que_UrlBeforeConnect"<<std::endl;
-
+            MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeConnect);
             // std::cout<<"apply mutex_Que_UrlBeforeConnect OK "<<std::endl;
 
             for (int i = 0; i < 20; i++) {
-                std::cout << "con activi" << Que_UrlBeforeConnect.size() << std::endl;
+                std::cout<<i << "  con activi" << Que_UrlBeforeConnect.size() << std::endl;
+
                 if (lisfd[i] == -1) {
 
+                    std::cout<<" mutex_Que_UrlBeforeConnect size "<<Que_UrlBeforeConnect.size()<<std::endl;
 
-                    std::cout << "con activi do and Que_UrlBeforeConnect size=" << Que_UrlBeforeConnect.size()
-                              << std::endl;
 
                     if (1) {
-                        MutexRAII<pthread_mutex_t> lcks(mutex_Que_UrlBeforeConnect);
+
                         if (Que_UrlBeforeConnect.empty()) {
                             emp = 1;
                             break;
@@ -130,9 +133,9 @@ void *ThreadSocketFunc(void *argc) {
                         if (1) {
                             size_t domainHash = GetHashcode(tmpurl[i].domain);
 
-                            //std::cout<<"apply mutex_ipMap"<<std::endl;
+                            std::cout<<"apply mutex_ipMap"<<std::endl;
                             MutexRAII<pthread_mutex_t> lck(mutex_ipMap);
-                            //  std::cout<<"apply mutex_ipMap OK "<<std::endl;
+                              std::cout<<"apply mutex_ipMap OK "<<std::endl;
 
 
                             ipMap[domainHash].insert(tmpurl[i]);
@@ -150,6 +153,8 @@ void *ThreadSocketFunc(void *argc) {
 
 
                 }
+                std::cout << "con activi do and Que_UrlBeforeConnect size=" << Que_UrlBeforeConnect.size()
+                          << std::endl<< std::endl;
             }
 
         }
@@ -198,7 +203,7 @@ void *ThreadSocketFunc(void *argc) {
                         std::cout << "ipMap " << i.second.size() << std::endl;
                     }
                     std::cout << std::endl;
-                    if (ipMap[domainHash].size() > 50) {
+                    if (ipMap[domainHash].size() > 150) {
                         emp = 1;
                     }
                     // std::cout<<"add Url  :domain= "<<url.domain <<"  "<<url.url<<std::endl;
